@@ -1,29 +1,45 @@
-import java.util.Arrays;
+import java.util.*;
 
 class Solution {
     public double separateSquares(int[][] squares) {
-        double totalArea = Arrays.stream(squares)
-            .mapToDouble(s -> (double) s[2] * s[2])
-            .sum();
+        double totalArea = 0;
+        // Use a TreeMap to store the net "width" change at each Y-coordinate
+        // Key: Y-coordinate, Value: The total width of squares starting/ending here
+        TreeMap<Double, Double> events = new TreeMap<>();
 
-        double low = Arrays.stream(squares).mapToDouble(s -> s[1]).min().orElse(0);
-        double high = Arrays.stream(squares).mapToDouble(s -> s[1] + s[2]).max().orElse(2e9);
-
-        while (high - low > 1e-7) {
-            double mid = low + (high - low) / 2.0;
-            if (getAreaBelow(squares, mid) >= totalArea / 2.0) high = mid;
-            else low = mid;
+        for (int[] s : squares) {
+            double y = s[1], l = s[2];
+            double area = l * l;
+            totalArea += area;
+            
+            // At y, the total width of squares being "cut" increases by l
+            events.put(y, events.getOrDefault(y, 0.0) + l);
+            // At y + l, that width contribution ends
+            events.put(y + l, events.getOrDefault(y + l, 0.0) - l);
         }
 
-        return high;
-    }
+        double targetArea = totalArea / 2.0;
+        double currentArea = 0;
+        double currentWidth = 0;
+        double prevY = events.firstKey();
 
-    private double getAreaBelow(int[][] squares, double line) {
-        return Arrays.stream(squares)
-            .mapToDouble(s -> {
-                double y = s[1], l = s[2], top = y + l;
-                return line <= y ? 0 : line >= top ? l * l : l * (line - y);
-            })
-            .sum();
+        for (Map.Entry<Double, Double> entry : events.entrySet()) {
+            double currY = entry.getKey();
+            double dy = currY - prevY;
+            double areaInInterval = dy * currentWidth;
+
+            // If adding this entire vertical slice exceeds the target, 
+            // the line must be within this interval.
+            if (currentArea + areaInInterval >= targetArea) {
+                double neededArea = targetArea - currentArea;
+                return prevY + (neededArea / currentWidth);
+            }
+
+            currentArea += areaInInterval;
+            currentWidth += entry.getValue(); // Update the active width for the next slice
+            prevY = currY;
+        }
+
+        return prevY;
     }
 }
