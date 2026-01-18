@@ -21,6 +21,3 @@ int main() {
     cout << "Errors: " << errors << endl;
     cout << "Warnings: " << warnings << endl;
 }
- log_analyser {
-    
-}
