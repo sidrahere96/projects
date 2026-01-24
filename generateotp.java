@@ -1,53 +1,33 @@
-// Java code to explain how to generate random
-// password
+import java.security.SecureRandom; // Higher entropy for security
+import java.util.stream.Collectors; // For fancy modern syntax
 
-// Here we are using random() method of util
-// class in Java
-import java.util.*;
+public class PasswordPro {
 
-public class generateotp
-{
-    public static void main(String[] args)
-    {
-        // Length of your password as I have choose
-        // here to be 8
-        int length = 10;
-        System.out.println(geek_Password(length));
+    // Grouping constants makes the code cleaner
+    private static final String CAPS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String SMALLS = "abcdefghijklmnopqrstuvwxyz";
+    private static final String NUMS = "0123456789";
+    private static final String SYMS = "!@#$%^&*_=+-/";
+    private static final String ALL_ALLOWED = CAPS + SMALLS + NUMS + SYMS;
+
+    // SecureRandom is much harder to "guess" than regular Random
+    private static final SecureRandom SECURE_RAND = new SecureRandom();
+
+    public static void main(String[] args) {
+        int length = 12;
+        System.out.println("🛡️ Generated Secure Password: " + generatePassword(length));
     }
 
-    // This our Password generating method
-    // We have use static here, so that we not to
-    // make any object for it
-    static char[] geek_Password(int len)
-    {
-        System.out.println("Generating password using random() : ");
-        System.out.print("Your new password is : ");
+    public static String generatePassword(int len) {
+        // We use StringBuilder for better performance when building strings
+        StringBuilder sb = new StringBuilder(len);
 
-        // A strong password has Cap_chars, Lower_chars,
-        // numeric value and symbols. So we are using all of
-        // them to generate our password
-        String Capital_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String Small_chars = "abcdefghijklmnopqrstuvwxyz";
-        String numbers = "0123456789";
-                String symbols = "!@#$%^&*_=+-/.?<>)";
-
-
-        String values = Capital_chars + Small_chars +
-                        numbers + symbols;
-
-        // Using random method
-        Random rndm_method = new Random();
-
-        char[] password = new char[len];
-
-        for (int i = 0; i < len; i++)
-        {
-            // Use of charAt() method : to get character value
-            // Use of nextInt() as it is scanning the value as int
-            password[i] =
-              values.charAt(rndm_method.nextInt(values.length()));
-
+        for (int i = 0; i < len; i++) {
+            // Pick a random index from 0 to the length of our allowed chars
+            int randomIndex = SECURE_RAND.nextInt(ALL_ALLOWED.length());
+            sb.append(ALL_ALLOWED.charAt(randomIndex));
         }
-        return password;
+
+        return sb.toString();
     }
 }
